@@ -5,7 +5,7 @@
       "format": "qcow2",
       "accelerator": "kvm",
       "qemuargs": [
-      	[ "-m", "2048" ]
+       [ "-m", "4096" ]
       ],
       "headless": "{{ user `headless` }}",
       "iso_url": "{{ user `iso_url` }}",
@@ -14,7 +14,7 @@
       "communicator": "winrm",
       "winrm_username": "vagrant",
       "winrm_password": "vagrant",
-      "winrm_timeout": "8h",
+      "winrm_timeout": "24h",
       "shutdown_command": "a:/PackerShutdown.bat",
       "shutdown_timeout": "15m",
       "floppy_files": [
