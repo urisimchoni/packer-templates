@@ -88,7 +88,10 @@
     },
     {
       "type": "powershell",
-      "inline": [ "C:/Temp/ConfigureRemotingForAnsible.ps1 -Verbose -ForceNewSSLCert -SkipNetworkProfileCheck -EnableCredSSP" ] ,
+      "inline": [ "C:/Temp/ConfigureRemotingForAnsible.ps1 -Verbose -ForceNewSSLCert -SkipNetworkProfileCheck -EnableCredSSP",
+                  "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))",
+		  "choco install -y chromium"
+		] ,
       "elevated_user": "vagrant",
       "elevated_password": "vagrant"
     }
