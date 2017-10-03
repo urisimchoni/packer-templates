@@ -80,6 +80,17 @@
       "script": "scripts/cleanup.ps1",
       "elevated_user": "vagrant",
       "elevated_password": "vagrant"
+    },
+    {
+      "type": "file",
+      "source": "scripts/ConfigureRemotingForAnsible.ps1",
+      "destination": "C:/Temp/ConfigureRemotingForAnsible.ps1"
+    },
+    {
+      "type": "powershell",
+      "inline": [ "C:/Temp/ConfigureRemotingForAnsible.ps1 -Verbose -ForceNewSSLCert -SkipNetworkProfileCheck -EnableCredSSP" ] ,
+      "elevated_user": "vagrant",
+      "elevated_password": "vagrant"
     }
   ],
   "post-processors": [
