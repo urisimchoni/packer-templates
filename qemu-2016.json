@@ -1,69 +1,79 @@
 {
   "builders": [
     {
-      "type": "qemu",
-      "format": "qcow2",
       "accelerator": "kvm",
-      "qemuargs": [
-       [ "-m", "4096" ]
-      ],
-      "headless": "{{ user `headless` }}",
-      "iso_url": "{{ user `iso_url` }}",
-      "iso_checksum": "{{ user `iso_checksum` }}",
-      "iso_checksum_type": "md5",
-      "disk_size": "{{ user `disk_size` }}",
       "communicator": "winrm",
-      "winrm_username": "vagrant",
-      "winrm_password": "vagrant",
-      "winrm_timeout": "24h",
-      "shutdown_command": "C:/Windows/Panther/Unattend/packer_shutdown.bat",
-      "shutdown_timeout": "15m",
+      "disk_size": "{{ user `disk_size` }}",
       "floppy_files": [
         "answer_files/2016/Autounattend.xml",
         "scripts/winrm.ps1",
-	"{{ user `virtio_dir`}}/netkvm.*",
-	"{{ user `virtio_dir`}}/viostor.*"
-      ]
+        "{{ user `virtio_dir`}}/netkvm.*",
+        "{{ user `virtio_dir`}}/viostor.*"
+      ],
+      "format": "qcow2",
+      "headless": "{{ user `headless` }}",
+      "iso_checksum": "md5:{{ user `iso_checksum` }}",
+      "iso_url": "{{ user `iso_url` }}",
+      "qemuargs": [
+        [
+          "-m",
+          "4096"
+        ]
+      ],
+      "shutdown_command": "C:/Windows/Panther/Unattend/packer_shutdown.bat",
+      "shutdown_timeout": "15m",
+      "type": "qemu",
+      "winrm_password": "vagrant",
+      "winrm_timeout": "24h",
+      "winrm_username": "vagrant"
+    }
+  ],
+  "post-processors": [
+    {
+      "keep_input_artifact": true,
+      "output": "windows2016min-{{.Provider}}.box",
+      "type": "vagrant",
+      "vagrantfile_template": "vagrantfile-windows.template"
     }
   ],
   "provisioners": [
     {
-      "type": "chef-solo",
-      "version": "12.19.36",
-      "cookbook_paths": ["cookbooks", "cookbooks/packer-templates/berks-cookbooks"],
+      "cookbook_paths": [
+        "cookbooks",
+        "cookbooks/packer-templates/berks-cookbooks"
+      ],
       "guest_os_type": "windows",
       "run_list": [
         "wsus-client::configure",
         "packer-templates::install_ps_modules",
         "packer-templates::uninstall_powershell_ise",
         "packer-templates::delete_pagefile"
-      ]
-    },
-    {
-      "type": "powershell",
-      "script": "scripts/windows-updates.ps1",
-      "elevated_user": "vagrant",
-      "elevated_password": "vagrant"
-    },
-    {
-      "type": "windows-restart",
-      "restart_timeout": "15m"
-    },
-    {
-      "type": "powershell",
-      "script": "scripts/after-reboot.ps1",
-      "elevated_user": "vagrant",
-      "elevated_password": "vagrant"
-    },
-    {
+      ],
       "type": "chef-solo",
-      "version": "12.19.36",
+      "version": "12.19.36"
+    },
+    {
+      "elevated_password": "vagrant",
+      "elevated_user": "vagrant",
+      "script": "scripts/windows-updates.ps1",
+      "type": "powershell"
+    },
+    {
+      "restart_timeout": "15m",
+      "type": "windows-restart"
+    },
+    {
+      "elevated_password": "vagrant",
+      "elevated_user": "vagrant",
+      "script": "scripts/after-reboot.ps1",
+      "type": "powershell"
+    },
+    {
+      "guest_os_type": "windows",
       "remote_cookbook_paths": [
         "c:/windows/temp/packer-chef-solo/cookbooks-0",
         "c:/windows/temp/packer-chef-solo/cookbooks-1"
       ],
-      "guest_os_type": "windows",
-      "skip_install": "true",
       "run_list": [
         "packer-templates::enable_file_sharing",
         "packer-templates::remote_desktop",
@@ -73,42 +83,38 @@
         "packer-templates::set_local_account_token_filter_policy",
         "packer-templates::remove_dirs",
         "packer-templates::add_setup_complete"
-      ]
+      ],
+      "skip_install": "true",
+      "type": "chef-solo",
+      "version": "12.19.36"
     },
     {
-      "type": "powershell",
+      "elevated_password": "vagrant",
+      "elevated_user": "vagrant",
       "script": "scripts/cleanup.ps1",
-      "elevated_user": "vagrant",
-      "elevated_password": "vagrant"
+      "type": "powershell"
     },
     {
-      "type": "file",
+      "destination": "C:/Temp/ConfigureRemotingForAnsible.ps1",
       "source": "scripts/ConfigureRemotingForAnsible.ps1",
-      "destination": "C:/Temp/ConfigureRemotingForAnsible.ps1"
+      "type": "file"
     },
     {
-      "type": "powershell",
-      "inline": [ "C:/Temp/ConfigureRemotingForAnsible.ps1 -Verbose -ForceNewSSLCert -SkipNetworkProfileCheck -EnableCredSSP",
-                  "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))",
-		  "choco install -y chromium"
-		] ,
+      "elevated_password": "vagrant",
       "elevated_user": "vagrant",
-      "elevated_password": "vagrant"
-    }
-  ],
-  "post-processors": [
-    {
-      "type": "vagrant",
-      "keep_input_artifact": true,
-      "output": "windows2016min-{{.Provider}}.box",
-      "vagrantfile_template": "vagrantfile-windows.template"
+      "inline": [
+        "C:/Temp/ConfigureRemotingForAnsible.ps1 -Verbose -ForceNewSSLCert -SkipNetworkProfileCheck -EnableCredSSP",
+        "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))",
+        "choco install -y chromium"
+      ],
+      "type": "powershell"
     }
   ],
   "variables": {
+    "disk_size": "60000",
     "headless": "false",
     "iso_checksum": "18a4f00a675b0338f3c7c93c4f131beb",
     "iso_url": "http://care.dlservice.microsoft.com/dl/download/1/6/F/16FA20E6-4662-482A-920B-1A45CF5AAE3C/14393.0.160715-1616.RS1_RELEASE_SERVER_EVAL_X64FRE_EN-US.ISO",
-    "disk_size": "60000",
     "virtio_dir": "/usr/share/virtio-win/drivers/amd64/Win2016"
   }
 }
